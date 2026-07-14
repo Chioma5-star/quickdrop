@@ -1,0 +1,366 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap');
+
+:root {
+  --bg: #FAF7F1;
+  --surface: #FFFFFF;
+  --ink: #1B2420;
+  --ink-soft: #5B6660;
+  --line: #E4E0D6;
+
+  --route: #0B6E4F;      /* the "in motion" green */
+  --route-soft: #DCEEE5;
+  --amber: #E8A33D;      /* pending / attention */
+  --amber-soft: #FBEBD2;
+  --red: #C1483D;        /* cancelled */
+  --red-soft: #F6DEDB;
+
+  --radius: 10px;
+  --font-display: 'Archivo', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 40px 0 32px;
+  border-bottom: 4px solid var(--route);
+}
+
+.header-inner h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  margin: 0;
+  color: #C9D6CE;
+  font-size: 0.95rem;
+}
+
+main.container {
+  padding-top: 32px;
+  padding-bottom: 48px;
+}
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.card h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin: 0 0 18px;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- Form ---------- */
+.form-row {
+  margin-bottom: 14px;
+}
+
+.form-row.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+input[type="text"]:focus {
+  outline: 2px solid var(--route);
+  outline-offset: 1px;
+  background: var(--surface);
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 11px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+
+.btn:active { transform: scale(0.98); }
+
+.btn-primary {
+  background: var(--route);
+  color: #fff;
+}
+
+.btn-primary:hover { opacity: 0.9; }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.btn-secondary:hover { background: var(--bg); }
+
+.form-message {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  min-height: 1em;
+}
+
+.form-message.success { color: var(--route); }
+.form-message.error { color: var(--red); }
+
+/* ---------- List controls ---------- */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.list-header h2 { margin: 0; }
+
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.filter-controls label {
+  margin: 0;
+  text-transform: none;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+
+select {
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  background: var(--bg);
+}
+
+.loading-text {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  padding: 12px 0;
+}
+
+.error-message {
+  color: var(--red);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+/* ---------- Delivery Cards ---------- */
+.deliveries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.delivery-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.delivery-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.customer-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 2px;
+}
+
+.item-desc {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* Signature element: a route bar showing pickup -> dropoff with progress dot */
+.route-bar {
+  position: relative;
+  margin: 16px 0 10px;
+}
+
+.route-track {
+  position: relative;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+}
+
+.route-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--route);
+  transition: width 0.4s ease;
+}
+
+.route-dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--route);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 2px var(--route);
+  transform: translate(-50%, -50%);
+  transition: left 0.4s ease;
+}
+
+.route-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.route-labels span:last-child { text-align: right; }
+
+/* Status pill */
+.status-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.status-pending { background: var(--amber-soft); color: #8A5A15; }
+.status-picked_up { background: var(--route-soft); color: var(--route); }
+.status-in_transit { background: var(--route-soft); color: var(--route); }
+.status-delivered { background: #D9E9DD; color: #1F5C34; }
+.status-cancelled { background: var(--red-soft); color: var(--red); }
+
+/* Card actions */
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.card-actions select {
+  font-size: 0.8rem;
+  padding: 6px 8px;
+}
+
+.btn-danger {
+  background: var(--red-soft);
+  color: var(--red);
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+.btn-danger:hover { background: #F1CBC5; }
+
+.timestamp {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  margin-top: 10px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+/* ---------- Footer ---------- */
+.app-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 560px) {
+  .form-row.two-col {
+    grid-template-columns: 1fr;
+  }
+  .delivery-card-top {
+    flex-direction: column;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .route-progress, .route-dot, .btn {
+    transition: none;
+  }
+}

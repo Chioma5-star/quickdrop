@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickDrop — Delivery Tracker</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="container header-inner">
+      <h1>📦 QuickDrop</h1>
+      <p class="tagline">Track local deliveries and errands in real time</p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Create Delivery Form -->
+    <section class="card form-card">
+      <h2>New Delivery Request</h2>
+      <form id="delivery-form">
+        <div class="form-row">
+          <label for="customer_name">Customer Name</label>
+          <input type="text" id="customer_name" name="customer_name" placeholder="e.g. Ama Boateng" required />
+        </div>
+
+        <div class="form-row two-col">
+          <div>
+            <label for="pickup_location">Pickup Location</label>
+            <input type="text" id="pickup_location" name="pickup_location" placeholder="e.g. Osu, Accra" required />
+          </div>
+          <div>
+            <label for="dropoff_location">Dropoff Location</label>
+            <input type="text" id="dropoff_location" name="dropoff_location" placeholder="e.g. East Legon, Accra" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="item_description">Item Description (optional)</label>
+          <input type="text" id="item_description" name="item_description" placeholder="e.g. Small parcel" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Delivery Request</button>
+      </form>
+      <p id="form-message" class="form-message"></p>
+    </section>
+
+    <!-- Deliveries List -->
+    <section class="card list-card">
+      <div class="list-header">
+        <h2>Delivery Requests</h2>
+        <div class="filter-controls">
+          <label for="status-filter">Filter by status:</label>
+          <select id="status-filter">
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="picked_up">Picked Up</option>
+            <option value="in_transit">In Transit</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button id="refresh-btn" class="btn btn-secondary">Refresh</button>
+        </div>
+      </div>
+
+      <div id="loading" class="loading-text">Loading deliveries...</div>
+      <div id="error-message" class="error-message"></div>
+      <div id="deliveries-list" class="deliveries-list"></div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>QuickDrop — Codveda Full-Stack Internship, Level 1 (Task 3)</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
