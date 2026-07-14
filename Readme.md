@@ -1,4 +1,4 @@
-# QuickDrop Frontend (Level 1, Task 3)
+# QuickDrop Frontend 
 
 A vanilla HTML/CSS/JavaScript frontend that consumes the QuickDrop REST API — create delivery requests, view them all, filter by status, update status, and delete requests. No frameworks, no build step.
 
@@ -23,6 +23,3 @@ If your API runs on a different port, update `API_BASE_URL` at the top of `js/ap
 - Delete a delivery request (with confirmation)
 - Basic input escaping to avoid HTML injection from entered text
 - Responsive layout down to mobile widths
-
-## Next step
-Level 2, Task 1 rebuilds this same UI as a React app with component-based state management.
