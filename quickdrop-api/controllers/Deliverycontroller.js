@@ -2,23 +2,25 @@ const pool = require('../config/db');
 
 const VALID_STATUSES = ['pending', 'picked_up', 'in_transit', 'delivered', 'cancelled'];
 
-// CREATE - POST /api/deliveries
+// CREATE - POST /api/deliveries  (customers only)
 async function createDelivery(req, res) {
   try {
-    const { customer_name, pickup_location, dropoff_location, item_description } = req.body;
+    const { pickup_location, dropoff_location, item_description } = req.body;
+    const customer_id = req.user.id;
+    const customer_name = req.user.name;
 
-    if (!customer_name || !pickup_location || !dropoff_location) {
+    if (!pickup_location || !dropoff_location) {
       return res.status(400).json({
         success: false,
-        message: 'customer_name, pickup_location, and dropoff_location are required',
+        message: 'pickup_location and dropoff_location are required',
       });
     }
 
     const result = await pool.query(
-      `INSERT INTO delivery_requests (customer_name, pickup_location, dropoff_location, item_description)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO delivery_requests (customer_name, customer_id, pickup_location, dropoff_location, item_description)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [customer_name, pickup_location, dropoff_location, item_description || null]
+      [customer_name, customer_id, pickup_location, dropoff_location, item_description || null]
     );
 
     return res.status(201).json({ success: true, data: result.rows[0] });
@@ -29,18 +31,30 @@ async function createDelivery(req, res) {
 }
 
 // READ ALL - GET /api/deliveries
+// Customers see only their own requests. Couriers see everything (so they can pick jobs up).
 async function getAllDeliveries(req, res) {
   try {
     const { status } = req.query;
+    const { id: userId, role } = req.user;
 
-    let query = 'SELECT * FROM delivery_requests';
+    const conditions = [];
     const params = [];
 
+    if (role === 'customer') {
+      params.push(userId);
+      conditions.push(`customer_id = $${params.length}`);
+    }
+    // couriers get no ownership filter — they can see all requests to pick from
+
     if (status) {
-      query += ' WHERE status = $1';
       params.push(status);
+      conditions.push(`status = $${params.length}`);
     }
 
+    let query = 'SELECT * FROM delivery_requests';
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
     query += ' ORDER BY created_at DESC';
 
     const result = await pool.query(query, params);
@@ -55,6 +69,7 @@ async function getAllDeliveries(req, res) {
 async function getDeliveryById(req, res) {
   try {
     const { id } = req.params;
+    const { id: userId, role } = req.user;
 
     const result = await pool.query('SELECT * FROM delivery_requests WHERE id = $1', [id]);
 
@@ -62,7 +77,13 @@ async function getDeliveryById(req, res) {
       return res.status(404).json({ success: false, message: `Delivery request with id ${id} not found` });
     }
 
-    return res.status(200).json({ success: true, data: result.rows[0] });
+    const delivery = result.rows[0];
+
+    if (role === 'customer' && delivery.customer_id !== userId) {
+      return res.status(403).json({ success: false, message: 'You can only view your own delivery requests' });
+    }
+
+    return res.status(200).json({ success: true, data: delivery });
   } catch (err) {
     console.error('getDeliveryById error:', err.message);
     return res.status(500).json({ success: false, message: 'Server error fetching delivery request' });
@@ -70,10 +91,13 @@ async function getDeliveryById(req, res) {
 }
 
 // UPDATE - PUT /api/deliveries/:id
+// Customers: can only cancel their own pending request.
+// Couriers: can claim an unassigned request and update its status.
 async function updateDelivery(req, res) {
   try {
     const { id } = req.params;
-    const { customer_name, pickup_location, dropoff_location, item_description, status } = req.body;
+    const { status, pickup_location, dropoff_location, item_description } = req.body;
+    const { id: userId, role } = req.user;
 
     if (status && !VALID_STATUSES.includes(status)) {
       return res.status(400).json({
@@ -89,22 +113,37 @@ async function updateDelivery(req, res) {
 
     const current = existing.rows[0];
 
+    if (role === 'customer') {
+      if (current.customer_id !== userId) {
+        return res.status(403).json({ success: false, message: 'You can only update your own delivery requests' });
+      }
+      if (status && status !== 'cancelled') {
+        return res.status(403).json({ success: false, message: 'Customers can only cancel a delivery request' });
+      }
+    }
+
+    // Courier claims the job automatically the first time they update its status
+    let courier_id = current.courier_id;
+    if (role === 'courier' && !courier_id) {
+      courier_id = userId;
+    }
+
     const result = await pool.query(
       `UPDATE delivery_requests
-       SET customer_name = $1,
-           pickup_location = $2,
-           dropoff_location = $3,
-           item_description = $4,
-           status = $5,
+       SET pickup_location = $1,
+           dropoff_location = $2,
+           item_description = $3,
+           status = $4,
+           courier_id = $5,
            updated_at = NOW()
        WHERE id = $6
        RETURNING *`,
       [
-        customer_name || current.customer_name,
         pickup_location || current.pickup_location,
         dropoff_location || current.dropoff_location,
         item_description !== undefined ? item_description : current.item_description,
         status || current.status,
+        courier_id,
         id,
       ]
     );
@@ -116,17 +155,22 @@ async function updateDelivery(req, res) {
   }
 }
 
-// DELETE - DELETE /api/deliveries/:id
+// DELETE - DELETE /api/deliveries/:id  (customers, own requests only)
 async function deleteDelivery(req, res) {
   try {
     const { id } = req.params;
+    const { id: userId, role } = req.user;
 
-    const result = await pool.query('DELETE FROM delivery_requests WHERE id = $1 RETURNING *', [id]);
-
-    if (result.rows.length === 0) {
+    const existing = await pool.query('SELECT * FROM delivery_requests WHERE id = $1', [id]);
+    if (existing.rows.length === 0) {
       return res.status(404).json({ success: false, message: `Delivery request with id ${id} not found` });
     }
 
+    if (role === 'customer' && existing.rows[0].customer_id !== userId) {
+      return res.status(403).json({ success: false, message: 'You can only delete your own delivery requests' });
+    }
+
+    const result = await pool.query('DELETE FROM delivery_requests WHERE id = $1 RETURNING *', [id]);
     return res.status(200).json({ success: true, message: 'Delivery request deleted', data: result.rows[0] });
   } catch (err) {
     console.error('deleteDelivery error:', err.message);

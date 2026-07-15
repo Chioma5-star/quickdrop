@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const deliveryRoutes = require('./routes/deliveryRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 
 // 404 handler for unmatched routes
@@ -34,5 +36,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 QuickDrop API running on http://localhost:${PORT}`);
+  console.log(` QuickDrop API running on http://localhost:${PORT}`);
 });

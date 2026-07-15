@@ -1,18 +1,4 @@
-# Dependencies
 node_modules/
-**/node_modules/
-
-# Environment variables (never commit real credentials)
 .env
-**/.env
-
-# Logs
 npm-debug.log
-**/npm-debug.log
-
-# OS files
 .DS_Store
-Thumbs.db
-
-# Editor
-.vscode/
