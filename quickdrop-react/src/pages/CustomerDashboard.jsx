@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api/client';
+import { getSocket } from '../socket';
 import DeliveryForm from '../components/DeliveryForm';
 import DeliveryList from '../components/DeliveryList';
 
@@ -27,6 +28,31 @@ export default function CustomerDashboard() {
   useEffect(() => {
     loadDeliveries();
   }, [loadDeliveries]);
+
+  // Live updates: when a courier updates one of this customer's deliveries
+  // (or it gets deleted), reflect it instantly without a manual refresh.
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    function handleUpdated(updatedDelivery) {
+      setDeliveries((prev) =>
+        prev.map((d) => (d.id === updatedDelivery.id ? updatedDelivery : d))
+      );
+    }
+
+    function handleDeleted({ id }) {
+      setDeliveries((prev) => prev.filter((d) => d.id !== id));
+    }
+
+    socket.on('delivery:updated', handleUpdated);
+    socket.on('delivery:deleted', handleDeleted);
+
+    return () => {
+      socket.off('delivery:updated', handleUpdated);
+      socket.off('delivery:deleted', handleDeleted);
+    };
+  }, []);
 
   async function handleCreate(formData) {
     await api.createDelivery(token, formData);

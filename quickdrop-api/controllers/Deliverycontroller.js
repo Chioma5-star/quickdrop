@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { getIO } = require('../sockets');
 
 const VALID_STATUSES = ['pending', 'picked_up', 'in_transit', 'delivered', 'cancelled'];
 
@@ -23,7 +24,12 @@ async function createDelivery(req, res) {
       [customer_name, customer_id, pickup_location, dropoff_location, item_description || null]
     );
 
-    return res.status(201).json({ success: true, data: result.rows[0] });
+    const newDelivery = result.rows[0];
+
+    // Let every connected courier know a new job is available, live
+    getIO().to('couriers').emit('delivery:new', newDelivery);
+
+    return res.status(201).json({ success: true, data: newDelivery });
   } catch (err) {
     console.error('createDelivery error:', err.message);
     return res.status(500).json({ success: false, message: 'Server error creating delivery request' });
@@ -148,7 +154,16 @@ async function updateDelivery(req, res) {
       ]
     );
 
-    return res.status(200).json({ success: true, data: result.rows[0] });
+    const updatedDelivery = result.rows[0];
+
+    // Notify the customer who owns this request, and all couriers (so their
+    // list reflects the new status/claim immediately, no refresh needed)
+    if (updatedDelivery.customer_id) {
+      getIO().to(`customer:${updatedDelivery.customer_id}`).emit('delivery:updated', updatedDelivery);
+    }
+    getIO().to('couriers').emit('delivery:updated', updatedDelivery);
+
+    return res.status(200).json({ success: true, data: updatedDelivery });
   } catch (err) {
     console.error('updateDelivery error:', err.message);
     return res.status(500).json({ success: false, message: 'Server error updating delivery request' });
@@ -171,7 +186,14 @@ async function deleteDelivery(req, res) {
     }
 
     const result = await pool.query('DELETE FROM delivery_requests WHERE id = $1 RETURNING *', [id]);
-    return res.status(200).json({ success: true, message: 'Delivery request deleted', data: result.rows[0] });
+    const deleted = result.rows[0];
+
+    if (deleted.customer_id) {
+      getIO().to(`customer:${deleted.customer_id}`).emit('delivery:deleted', { id: deleted.id });
+    }
+    getIO().to('couriers').emit('delivery:deleted', { id: deleted.id });
+
+    return res.status(200).json({ success: true, message: 'Delivery request deleted', data: deleted });
   } catch (err) {
     console.error('deleteDelivery error:', err.message);
     return res.status(500).json({ success: false, message: 'Server error deleting delivery request' });

@@ -1,11 +1,15 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
 require('dotenv').config();
 
 const deliveryRoutes = require('./routes/deliveryRoutes');
 const authRoutes = require('./routes/authRoutes');
+const { initSocket } = require('./sockets');
 
 const app = express();
+const httpServer = http.createServer(app);
+initSocket(httpServer);
 
 // Middleware
 app.use(cors());
@@ -35,6 +39,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(` QuickDrop API running on http://localhost:${PORT}`);
+httpServer.listen(PORT, () => {
+  console.log(`🚀 QuickDrop API running on http://localhost:${PORT}`);
+  console.log(`🔌 Socket.io ready for real-time connections`);
 });

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api/client';
+import { getSocket } from '../socket';
 import DeliveryList from '../components/DeliveryList';
 
 export default function CourierDashboard() {
@@ -26,6 +27,37 @@ export default function CourierDashboard() {
   useEffect(() => {
     loadDeliveries();
   }, [loadDeliveries]);
+
+  // Live updates: new jobs appear instantly, and status changes made by
+  // other couriers (or the customer cancelling) reflect without a refresh.
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    function handleNew(newDelivery) {
+      setDeliveries((prev) => [newDelivery, ...prev]);
+    }
+
+    function handleUpdated(updatedDelivery) {
+      setDeliveries((prev) =>
+        prev.map((d) => (d.id === updatedDelivery.id ? updatedDelivery : d))
+      );
+    }
+
+    function handleDeleted({ id }) {
+      setDeliveries((prev) => prev.filter((d) => d.id !== id));
+    }
+
+    socket.on('delivery:new', handleNew);
+    socket.on('delivery:updated', handleUpdated);
+    socket.on('delivery:deleted', handleDeleted);
+
+    return () => {
+      socket.off('delivery:new', handleNew);
+      socket.off('delivery:updated', handleUpdated);
+      socket.off('delivery:deleted', handleDeleted);
+    };
+  }, []);
 
   async function handleUpdateStatus(id, status) {
     try {
