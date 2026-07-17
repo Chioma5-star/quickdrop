@@ -12,7 +12,11 @@ const httpServer = http.createServer(app);
 initSocket(httpServer);
 
 // Middleware
-app.use(cors());
+// FRONTEND_URL lets us lock CORS down to just your real deployed frontend
+// once you know it (set it in Render's environment variables). Until then,
+// this defaults to allowing any origin, which is fine for local development.
+const allowedOrigin = process.env.FRONTEND_URL || '*';
+app.use(cors({ origin: allowedOrigin }));
 app.use(express.json());
 
 // Health check

@@ -7,7 +7,7 @@ let io = null;
 function initSocket(httpServer) {
   io = new Server(httpServer, {
     cors: {
-      origin: '*', // fine for a learning project; lock this to your real frontend URL in production
+      origin: process.env.FRONTEND_URL || '*',
     },
   });
 
