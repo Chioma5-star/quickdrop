@@ -19,11 +19,11 @@ const pool = process.env.DATABASE_URL
 // Quick sanity check on startup so connection issues are obvious immediately
 pool.connect()
   .then((client) => {
-    console.log(' Connected to PostgreSQL database');
+    console.log('✅ Connected to PostgreSQL database');
     client.release();
   })
   .catch((err) => {
-    console.error('Failed to connect to PostgreSQL:', err.message);
+    console.error('❌ Failed to connect to PostgreSQL:', err.message);
   });
 
 module.exports = pool;
